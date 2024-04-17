@@ -1,0 +1,170 @@
+   $table_display = "SELECT * FROM buy_add WHERE script_id = '$script_id'";
+    $run1 = sqlsrv_query($Con, $table_display);
+
+    $table_display_data = $table_display;
+
+    <br /><b>Warning</b>:  Trying to access array offset on value of type null in <b>C:\xampp\htdocs\investment\pages\sell-add.php</b> on line <b>54</b><br />
+
+
+       <option value="top-0 end-0">Top right</option>
+
+
+
+
+        $.ajax({
+                method: 'POST',
+                url: '../includes/buy-sell_db.php',
+                data: {
+                    script_id_fetch: script_id_fetch
+                },
+                success: function(response) {
+                    $('#sector').val(response);
+                },
+                error: function(data) {
+                    $('.script_result').html(data);
+                }
+            });
+
+        });
+
+
+        -----------------------------------------------------------------
+
+
+     <?php
+include('../includes/header.php');
+include('../includes/dbcon.php');
+?>
+<table class="table table-hover border-1 pt-5 w-full float-start" id="dataTable">
+    <thead>
+        <tr>
+            <th scope="col">Script Name</th>
+            <th scope="col">Sector</th>
+            <th style="width: 190px;" scope="col">Entry Date</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Entry Price</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Total Amount</th>
+            <th scope="col">Sell QTY</th>
+            <th scope="col">Exit Price</th>
+            <th scope="col">Total Amount</th>
+            <th scope="col">Profit / Loss</th>
+        </tr>
+    </thead>
+    <tbody id="buy_data">
+        <?php
+        $display_outer = "SELECT b.*,s.* FROM sell_db AS s FULL JOIN buy_db AS b ON s.buy_id = b.id";
+        $run_outer = SQLSRV_QUERY($Con, $display_outer);
+        while ($row_outer = SQLSRV_FETCH_ARRAY($run_outer, SQLSRV_FETCH_ASSOC)) {
+            $entryPrice = $row_outer['entry_price'];
+            $result = $row_outer['buy_id'];
+        ?>
+            <tr>
+                <td><?= $row_outer['script_name'] ?></td>
+                <td><?= $row_outer['sector'] ?></td>
+                <td style="width: 190px;"><?= $row_outer['entry_date']->format('Y-m-d') ?></td>
+                <td><?= $row_outer['initial_buy'] ?></td>
+                <td><?= $row_outer['entry_price'] ?></td>
+                <td><?= $row_outer['amount'] ?></td>
+                <td><?= $row_outer['total_amount'] ?></td>
+                <td><?= $result ?></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <?php
+            $sum = 0;
+            $display_inner = "SELECT s.* FROM sell_db AS s FULL JOIN buy_db AS b ON s.buy_id = b.id WHERE b.id = '$result'";
+            $run_inner = SQLSRV_QUERY($Con, $display_inner);
+            while ($row_inner = SQLSRV_FETCH_ARRAY($run_inner, SQLSRV_FETCH_ASSOC)) {
+                $profit_loss = $row_inner['exit_price'] - $entryPrice;
+                $sum += $profit_loss;
+            ?>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><?= $row_inner['sell_qty'] ?></td>
+                    <td><?= $row_inner['exit_price'] ?></td>
+                    <td><?= $row_inner['total_amount'] ?></td>
+                    <td style="color: <?php echo ($profit_loss > 0) ? 'green' : (($profit_loss < 0) ? 'red' : 'black'); ?>; font-weight:600; "><?= $profit_loss ?></td>
+                </tr>
+            <?php } ?>
+        <?php } ?>
+    </tbody>
+    <tfoot>
+        <tr>
+            <th scope="col">Script Name</th>
+            <th scope="col">Sector</th>
+            <th style="width: 190px;" scope="col">Entry Date</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Entry Price</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Total Amount</th>
+            <th scope="col">Sell QTY</th>
+            <th scope="col">Exit Price</th>
+            <th scope="col">Total Amount</th>
+            <th scope="col">Profit / Loss</th>
+        </tr>
+    </tfoot>
+</table>
+
+<?php include('../includes/footer.php'); ?>
+<script>
+    $(document).ready(function() {
+        $('#dashboard').addClass('active');
+        $('#dataTable, #dataTable1').DataTable({
+            info: false,
+            lengthChange: false,
+            dom: 'Bfrtip',
+            buttons: ['pageLength', 'copy', 'excel', 'pdf', 'colvis'],
+            stateSave: true
+        });
+    });
+</script>
+
+
+USE [investment_db]
+GO
+
+/****** Object:  Table [dbo].[sell_db]    Script Date: 08-04-2024 23:18:38 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[sell_db](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[script_name] [nvarchar](50) NULL,
+	[script_id] [int] NULL,
+	[buy_id] [int] NULL,
+	[sector] [nvarchar](50) NULL,
+	[entry_date] [datetime] NULL,
+	[sell_qty] [float] NULL,
+	[entry_price] [float] NULL,
+	[amount] [float] NULL,
+	[brokerage] [float] NULL,
+	[total_brokerage] [float] NULL,
+	[total_amount] [float] NULL,
+	[createdAt] [datetime] NULL,
+	[createdBy] [nvarchar](50) NULL,
+	[updatedAt] [datetime] NULL,
+	[updatedBy] [nvarchar](50) NULL,
+	[exit_price] [float] NULL,
+	[buy_qty] [int] NULL,
+ CONSTRAINT [PK_sell_db] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[sell_db] ADD  CONSTRAINT [DF_sell_db_createdAt]  DEFAULT (getdate()) FOR [createdAt]
+GO
+
